@@ -51,6 +51,8 @@ def load_img(path):
     w, h = image.size
     print(f"loaded input image of size ({w}, {h}) from {path}")
     w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    if w > 512 or h > 512:
+        w, h = 512, 512
     image = image.resize((w, h), resample=PIL.Image.LANCZOS)
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
@@ -193,12 +195,18 @@ def main():
         choices=["full", "autocast"],
         default="autocast"
     )
+    parser.add_argument(
+        "--embedding_path",
+        type=str,
+        help="Path to a pre-trained embedding manager checkpoint")
 
     opt = parser.parse_args()
     seed_everything(opt.seed)
 
     config = OmegaConf.load(f"{opt.config}")
     model = load_model_from_config(config, f"{opt.ckpt}")
+    if opt.embedding_path:
+        model.embedding_manager.load(opt.embedding_path)
 
     device = torch.device(choose_torch_device())
     model = model.to(device)

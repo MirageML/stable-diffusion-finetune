@@ -158,6 +158,12 @@ def get_parser(**parser_kwargs):
         help='Path to model to actually resume from',
     )
     parser.add_argument(
+        '--train_steps',
+        type=int,
+        default=7000,
+        help='Max amount of steps to train',
+    )
+    parser.add_argument(
         '--data_root',
         type=str,
         required=True,
@@ -473,7 +479,7 @@ class ImageLogger(Callback):
             self.check_frequency(check_idx)
             and hasattr(  # batch_idx % self.batch_freq == 0
                 pl_module, 'log_images'
-            ) 
+            )
             and callable(pl_module.log_images)
             and self.max_images > 0
         ):
@@ -705,6 +711,7 @@ if __name__ == '__main__':
             gpuinfo = trainer_config['gpus']
             print(f'Running on GPUs {gpuinfo}')
             cpu = False
+        trainer_config['max_steps'] = opt.train_steps
         trainer_opt = argparse.Namespace(**trainer_config)
         lightning_config.trainer = trainer_config
 

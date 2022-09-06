@@ -182,6 +182,10 @@ def main():
         choices=["full", "autocast"],
         default="autocast"
     )
+    parser.add_argument(
+        "--embedding_path",
+        type=str,
+        help="Path to a pre-trained embedding manager checkpoint")
     opt = parser.parse_args()
 
     if opt.laion400m:
@@ -193,6 +197,7 @@ def main():
 
     config = OmegaConf.load(f"{opt.config}")
     model = load_model_from_config(config, f"{opt.ckpt}")
+    model.embedding_manager.load(opt.embedding_path)
 
     seed_everything(opt.seed)
 
@@ -264,7 +269,7 @@ def main():
                             prompts = list(prompts)
                         c = model.get_learned_conditioning(prompts)
                         shape = [opt.C, opt.H // opt.f, opt.W // opt.f]
-                        
+
                         if not opt.klms:
                             samples_ddim, _ = sampler.sample(S=opt.ddim_steps,
                                                             conditioning=c,
@@ -284,7 +289,7 @@ def main():
                             model_wrap_cfg = CFGDenoiser(model_wrap)
                             extra_args = {'cond': c, 'uncond': uc, 'cond_scale': opt.scale}
                             samples_ddim = K.sampling.sample_lms(model_wrap_cfg, x, sigmas, extra_args=extra_args)
-                        
+
                         x_samples_ddim = model.decode_first_stage(samples_ddim)
                         x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
 
