@@ -47,7 +47,7 @@ def finetune(init_word, image_data, style, output_path):
     base = "./configs/stable-diffusion/v1-finetune.yaml"
     if style:
         base = "./configs/stable-diffusion/v1-finetune_style.yaml"
-    command = f"python main.py --base {base} --train true --actual_resume ./models/ldm/stable-diffusion-v1/model.ckpt -n {init_word} --gpus 0, --train_steps 7000 --data_root ./training_data/ --init_word {init_word}"
+    command = f"python main.py --base {base} --train true --actual_resume ./stable-diffusion-finetune/stable-diffusion-v-1-4-original/sd-v1-4.ckpt -n {init_word} --gpus 0, --train_steps 7000 --data_root ./training_data/ --init_word {init_word}"
 
     subprocess.call(command.split(" "))
 
@@ -64,7 +64,7 @@ def finetune(init_word, image_data, style, output_path):
 def create_finetuned_data(init_word, prompt, num_images, init_image, output_path):
     # model configuration
     t2i = T2I(
-        weights='./models/ldm/stable-diffusion-v1/model.ckpt',
+        weights='./stable-diffusion-finetune/stable-diffusion-v-1-4-original/sd-v1-4.ckpt',
         config='./configs/stable-diffusion/v1-inference.yaml',
         embedding_path=os.path.join(output_path, "embeddings.pt")  # modify the embedding path
         seed=None,              # seed for random number generator
